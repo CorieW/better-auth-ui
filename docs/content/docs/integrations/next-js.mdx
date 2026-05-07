@@ -4,7 +4,7 @@ icon: NextJs
 ---
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-This guide covers integrating `@daveyplate/better-auth-ui` into your Next.js project.
+This guide covers integrating `@coriew/better-auth-ui` into your Next.js project.
 
 ## Starter Project
 
@@ -16,7 +16,7 @@ Want to skip the installation? Check out the starter here:
 
 ## App Router
 
-Follow these steps to set up `@daveyplate/better-auth-ui` in your [Next.js](https://nextjs.org) project using the **App Router**:
+Follow these steps to set up `@coriew/better-auth-ui` in your [Next.js](https://nextjs.org) project using the **App Router**:
 
 <Steps>
 <Step>
@@ -27,7 +27,7 @@ The first step is to set up the [`<AuthUIProvider />`](/components/auth-ui-provi
 ```tsx title="app/providers.tsx"
 "use client"
 
-import { AuthUIProvider } from "@daveyplate/better-auth-ui"
+import { AuthUIProvider } from "@coriew/better-auth-ui"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
@@ -84,7 +84,7 @@ The [`<AuthUIProvider />`](/components/auth-ui-provider) can be fully customized
 Create a dynamic route segment for authentication views in `app/auth/[path]/page.tsx`.
 
 ```tsx title="app/auth/[path]/page.tsx"
-import { AuthView } from "@daveyplate/better-auth-ui"
+import { AuthView } from "@dave@coriewer-auth-ui"
 import { authViewPaths } from "@daveyplate/better-auth-ui/server"
 
 export const dynamicParams = false
@@ -101,7 +101,7 @@ export default async function AuthPage({ params }: { params: Promise<{ path: str
             <AuthView path={path} />
         </main>
     )
-}
+}@coriew
 ```
 
 
@@ -131,7 +131,7 @@ import { accountViewPaths } from "@daveyplate/better-auth-ui/server"
 export const dynamicParams = false
 
 export function generateStaticParams() {
-    return Object.values(accountViewPaths).map((path) => ({ path }))
+    return Object.values(accou@coriew).map((path) => ({ path }))
 }
 
 export default async function AccountPage({ params }: { params: Promise<{ path: string }> }) {
@@ -141,7 +141,7 @@ export default async function AccountPage({ params }: { params: Promise<{ path: 
         <main className="container p-4 md:p-6">
             <AccountView path={path} />
         </main>
-    )
+    )@coriew
 }
 ```
 </Step>
@@ -172,8 +172,8 @@ export default async function OrganizationPage({ params }: { params: Promise<{ p
 #### Slug-Based Organization URLs
 
 If you prefer slug-based organization URLs (e.g., `/organization/my-org/settings`), you'll need to:
-
-1. Update your `AuthUIProvider` to use `useParams` to get the current slug from the URL
+@coriew
+1. Update your `AuthUIProvider`@corieweParams` to get the current slug from the URL
 2. Create a nested dynamic route structure: `app/organization/[slug]/[path]/page.tsx`
 
 First, update your providers to extract the slug from the URL:

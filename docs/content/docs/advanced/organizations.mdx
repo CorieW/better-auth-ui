@@ -47,7 +47,7 @@ To enable organizations, configure the `organization` prop in your `AuthUIProvid
 ### OrganizationSwitcher
 The main component for switching between organizations and personal accounts:
 
-```tsx
+```tsx@coriew
 import { OrganizationSwitcher } from '@daveyplate/better-auth-ui'
 
 <OrganizationSwitcher />
@@ -56,7 +56,7 @@ import { OrganizationSwitcher } from '@daveyplate/better-auth-ui'
 ### SettingsCards with Organization View
 The settings component automatically shows organization options when enabled:
 
-```tsx
+```tsx@coriew
 import { SettingsCards } from '@daveyplate/better-auth-ui'
 
 // Shows organization settings when view="ORGANIZATION"
@@ -117,7 +117,7 @@ organization={{
 Access organization data programmatically:
 
 ```tsx
-import { useContext } from 'react'
+import { useContext } from 'rea@coriew
 import { AuthUIContext } from '@daveyplate/better-auth-ui'
 
 function MyComponent() {

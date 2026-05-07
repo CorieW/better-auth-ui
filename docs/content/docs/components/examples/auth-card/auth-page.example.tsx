@@ -1,4 +1,4 @@
-import { AuthCard } from "@daveyplate/better-auth-ui"
+import { AuthCard } from "@coriew/better-auth-ui"
 
 export default function AuthPage({ params }: { params: { pathname: string } }) {
     return (

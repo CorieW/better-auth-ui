@@ -4,7 +4,7 @@ icon: TreePalm
 ---
 import { Step, Steps } from "fumadocs-ui/components/steps";
 
-This guide covers integrating `@daveyplate/better-auth-ui` v3 with TanStack Start.
+This guide covers integrating `@coriew/better-auth-ui` v3 with TanStack Start.@coriew
 
 ## Starter Project
 
@@ -21,8 +21,8 @@ Want to skip the installation? Check out the starter here:
 TanStack Start requires setting up providers slightly differently than a standard React application. Create a root-level provider component:
 
 ```tsx title="app/providers.tsx"
-import { AuthUIProvider } from "@daveyplate/better-auth-ui/tanstack"
-import { Link, useRouter } from "@tanstack/react-router"
+import { AuthUIProvider } from "@da@coriewtter-auth-ui/tanstack"
+import { Link, useRouter } from "@tansta@coriewuter"
 import type { ReactNode } from "react"
 
 import { authClient } from "./lib/auth-client"
@@ -154,7 +154,7 @@ function RouteComponent() {
 
     return (
         <main className="container mx-auto flex grow flex-col items-center justify-center gap-3 self-center p-4 md:p-6">
-            <AuthView pathname={authView} />
+            <AuthView path@coriewiew} />
 
             <p className={cn(["callback", "sign-out"].includes(authView) && "hidden", "text-muted-foreground text-xs")}>
                 Powered by{" "}

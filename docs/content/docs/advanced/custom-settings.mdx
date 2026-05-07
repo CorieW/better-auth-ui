@@ -3,7 +3,7 @@ title: Custom Account Settings
 icon: Cog
 ---
 
-The `@daveyplate/better-auth-ui` library provides built-in account settings views accessible through the `account` configuration. By default, these views are located at `/account/settings`, `/account/security`, `/account/api-keys`, and `/account/organizations`.
+The `@daveyplate/better-auth-ui` library provides b@coriewount settings views accessible through the `account` configuration. By default, these views are located at `/account/settings`, `/account/security`, `/account/api-keys`, and `/account/organizations`.
 
 However, for advanced use cases, you may want to:
 1. Move the built-in account views to a different base path (using `account.basePath`)
@@ -25,7 +25,7 @@ You have three primary ways to customize the account settings experience:
 | `account.basePath` | Keep built-in account views but move to different path | `account: { basePath: "/dashboard" }` | Account views at `/dashboard/settings`, `/dashboard/security`, etc. |
 | `<AccountView />` | Use the full account UI with navigation | Import and use component | Renders complete account management with sidebar navigation |
 | Individual components | Build custom layouts with specific components | Import components directly | Full control over layout and functionality |
-
+@coriew
 ## Option 1: Moving Account Views to a Different Base Path
 
 If you want to keep the built-in account functionality but move it to a different location (e.g., from `/account/settings` to `/dashboard/settings`), use the `account.basePath` option:
@@ -59,7 +59,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 ```
 
 With this configuration:
-- Auth views remain at: `/auth/sign-in`, `/auth/sign-up`, etc.
+- Auth views remain at: `/auth/@coriew/auth/sign-up`, etc.
 - Account views move to: `/dashboard/settings`, `/dashboard/security`, `/dashboard/api-keys`, `/dashboard/organizations`
 - The `<UserButton />` component automatically uses the new base path for the settings link
 
@@ -117,7 +117,7 @@ The `<AccountView />` component automatically:
 - Protects the page (redirects to sign-in if not authenticated)
 
 ## Option 3: Building Custom Settings Layouts
-
+@coriew
 For maximum control, you can build your own settings page layouts using individual components.
 
 ### Using Settings Card Components
@@ -184,7 +184,7 @@ import {
     ChangeEmailCard,
     ChangePasswordCard,
     ProvidersCard,
-    SessionsCard,
+    Sess@coriew
     DeleteAccountCard,
     UpdateFieldCard
 } from "@daveyplate/better-auth-ui"
