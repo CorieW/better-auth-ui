@@ -34,6 +34,83 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build release notes from changesets
+        env:
+          RELEASE_NOTES_PATH: ${{ runner.temp }}/release-notes.md
+          CHANGESET_STATUS_PATH: ${{ runner.temp }}/changeset-status.json
+        run: |
+          pnpm exec changeset status --output "$CHANGESET_STATUS_PATH"
+
+          node <<'NODE'
+          const fs = require("node:fs");
+
+          const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          const status = JSON.parse(fs.readFileSync(process.env.CHANGESET_STATUS_PATH, "utf8"));
+          const release = status.releases.find((item) => item.name === packageJson.name) ?? status.releases[0];
+
+          if (!release) {
+            process.exit(0);
+          }
+
+          const releaseChangesets = new Set(release.changesets ?? []);
+          const changesets = status.changesets.filter((changeset) => releaseChangesets.has(changeset.id));
+
+          if (changesets.length === 0) {
+            process.exit(0);
+          }
+
+          const typeLabels = {
+            major: "Major Changes",
+            minor: "Minor Changes",
+            patch: "Patch Changes"
+          };
+
+          const typeOrder = ["major", "minor", "patch"];
+          const grouped = new Map(typeOrder.map((type) => [type, []]));
+
+          for (const changeset of changesets) {
+            const releaseType = changeset.releases.find((item) => item.name === release.name)?.type ?? release.type;
+            const entries = grouped.get(releaseType) ?? [];
+            entries.push(changeset.summary.trim());
+            grouped.set(releaseType, entries);
+          }
+
+          const formatBullet = (summary) => {
+            const lines = summary
+              .split(/\r?\n/)
+              .map((line) => line.trimEnd());
+            const firstLine = lines[0].replace(/^[*-]\s+/, "");
+            const rest = lines.slice(1).map((line) => (line ? `  ${line}` : ""));
+
+            return [`- ${firstLine}`, ...rest].join("\n");
+          };
+
+          const lines = ["**Changelog:**", ""];
+
+          for (const type of typeOrder) {
+            const entries = grouped.get(type) ?? [];
+
+            if (entries.length === 0) {
+              continue;
+            }
+
+            lines.push(`### ${typeLabels[type]}`, "");
+            lines.push(...entries.map(formatBullet), "");
+          }
+
+          const repository = process.env.GITHUB_REPOSITORY;
+          const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
+
+          if (repository && release.oldVersion && release.newVersion) {
+            lines.push(
+              `**Full Changelog**: ${serverUrl}/${repository}/compare/v${release.oldVersion}...v${release.newVersion}`,
+              ""
+            );
+          }
+
+          fs.writeFileSync(process.env.RELEASE_NOTES_PATH, lines.join("\n"));
+          NODE
+
       - name: Config git user
         run: |
           git config --global user.name "github-actions[bot]"
@@ -73,47 +150,10 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
 
-      - name: Extract changeset release notes
-        env:
-          VERSION: ${{ steps.release.outputs.version }}
-          TAG: ${{ steps.release.outputs.tag }}
-        run: |
-          node <<'NODE'
-          const fs = require("node:fs");
-
-          if (!fs.existsSync("CHANGELOG.md")) {
-            process.exit(0);
-          }
-
-          const version = process.env.VERSION.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-          const changelog = fs.readFileSync("CHANGELOG.md", "utf8");
-          const match = changelog.match(new RegExp(`^##\\s+${version}\\b[^\\n]*\\n([\\s\\S]*?)(?=^##\\s+|\\s*$)`, "m"));
-          const notes = match?.[1]?.trim() ?? "";
-          const changes = notes
-            .split(/\r?\n/)
-            .map((line) => line.trim())
-            .filter((line) => line && !/^#{1,6}\s/.test(line))
-            .map((line) => `- ${line.replace(/^[*-]\s+/, "")}`);
-
-          if (changes.length > 0) {
-            const repository = process.env.GITHUB_REPOSITORY ?? "CorieW/better-auth-ui";
-            const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
-            const tag = process.env.TAG;
-            const releaseNotes = [
-              "**Changelog:**",
-              ...changes,
-              "",
-              `**Full Changelog**: ${serverUrl}/${repository}/commits/${tag}`,
-              ""
-            ].join("\n");
-
-            fs.writeFileSync("release-notes.md", releaseNotes);
-          }
-          NODE
-
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_NOTES_PATH: ${{ runner.temp }}/release-notes.md
           TAG: ${{ steps.release.outputs.tag }}
           TARGET_SHA: ${{ steps.version_commit.outputs.sha }}
         run: |
@@ -127,12 +167,18 @@ jobs:
           fi
 
           if gh release view "$TAG" >/dev/null 2>&1; then
+            if [ -s "$RELEASE_NOTES_PATH" ]; then
+              gh release edit "$TAG" \
+                --title "$TAG" \
+                --notes-file "$RELEASE_NOTES_PATH"
+            fi
+
             gh release upload "$TAG" artifacts/*.tgz --clobber
-          elif [ -s release-notes.md ]; then
+          elif [ -s "$RELEASE_NOTES_PATH" ]; then
             gh release create "$TAG" artifacts/*.tgz \
               --target "$TARGET_SHA" \
               --title "$TAG" \
-              --notes-file release-notes.md
+              --notes-file "$RELEASE_NOTES_PATH"
           else
             gh release create "$TAG" artifacts/*.tgz \
               --target "$TARGET_SHA" \
