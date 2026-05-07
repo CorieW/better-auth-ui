@@ -2,11 +2,6 @@ name: Release
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: Version to release. Defaults to package.json version.
-        required: false
-        type: string
 
 permissions:
   contents: write
@@ -39,6 +34,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Config git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Version package from changesets
+        run: pnpm version-packages
+
+      - name: Commit version changes
+        id: version_commit
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git add package.json pnpm-lock.yaml .changeset
+            if [ -f CHANGELOG.md ]; then
+              git add CHANGELOG.md
+            fi
+
+            git commit -m "chore: version package"
+            git push
+          fi
+
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Build package
         run: pnpm build
 
@@ -49,33 +67,58 @@ jobs:
 
       - name: Resolve release tag
         id: release
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          version="${INPUT_VERSION:-$(node -p "require('./package.json').version")}"
-          tag="${version#v}"
-          tag="v${tag}"
+          version="$(node -p "require('./package.json').version")"
+          tag="v${version}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Extract changeset release notes
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+
+          if (!fs.existsSync("CHANGELOG.md")) {
+            process.exit(0);
+          }
+
+          const version = process.env.VERSION.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const changelog = fs.readFileSync("CHANGELOG.md", "utf8");
+          const match = changelog.match(new RegExp(`^##\\s+${version}\\b[^\\n]*\\n([\\s\\S]*?)(?=^##\\s+|\\s*$)`, "m"));
+          const notes = match?.[1]?.trim();
+
+          if (notes) {
+            fs.writeFileSync("release-notes.md", `${notes}\n`);
+          }
+          NODE
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.release.outputs.tag }}
+          TARGET_SHA: ${{ steps.version_commit.outputs.sha }}
         run: |
           git fetch --force --tags origin
 
           if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
             echo "Tag $TAG already exists"
           else
-            git tag "$TAG" "$GITHUB_SHA"
+            git tag "$TAG" "$TARGET_SHA"
             git push origin "$TAG"
           fi
 
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" artifacts/*.tgz --clobber
+          elif [ -s release-notes.md ]; then
+            gh release create "$TAG" artifacts/*.tgz \
+              --target "$TARGET_SHA" \
+              --title "$TAG" \
+              --notes-file release-notes.md
           else
             gh release create "$TAG" artifacts/*.tgz \
-              --target "$GITHUB_SHA" \
+              --target "$TARGET_SHA" \
               --title "$TAG" \
               --generate-notes
           fi
