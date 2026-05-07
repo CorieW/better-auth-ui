@@ -338,6 +338,7 @@ export function CreateOrganizationDialog({
                                                 localization.ORGANIZATION_NAME_PLACEHOLDER
                                             }
                                             {...field}
+                                            className={classNames?.input}
                                         />
                                     </FormControl>
 
@@ -361,6 +362,7 @@ export function CreateOrganizationDialog({
                                                 localization.ORGANIZATION_SLUG_PLACEHOLDER
                                             }
                                             {...field}
+                                            className={classNames?.input}
                                         />
                                     </FormControl>
 
