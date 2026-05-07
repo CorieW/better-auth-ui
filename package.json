@@ -1,7 +1,7 @@
 {
     "name": "@coriew/better-auth-ui",
     "homepage": "https://better-auth-ui.com",
-    "version": "3.4.0",
+    "version": "3.4.1",
     "description": "Plug & play shadcn/ui components for better-auth",
     "scripts": {
         "build": "tsup --clean --dts && cp src/style.css dist/style.css",
