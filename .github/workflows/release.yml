@@ -76,6 +76,7 @@ jobs:
       - name: Extract changeset release notes
         env:
           VERSION: ${{ steps.release.outputs.version }}
+          TAG: ${{ steps.release.outputs.tag }}
         run: |
           node <<'NODE'
           const fs = require("node:fs");
@@ -87,10 +88,26 @@ jobs:
           const version = process.env.VERSION.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
           const changelog = fs.readFileSync("CHANGELOG.md", "utf8");
           const match = changelog.match(new RegExp(`^##\\s+${version}\\b[^\\n]*\\n([\\s\\S]*?)(?=^##\\s+|\\s*$)`, "m"));
-          const notes = match?.[1]?.trim();
+          const notes = match?.[1]?.trim() ?? "";
+          const changes = notes
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter((line) => line && !/^#{1,6}\s/.test(line))
+            .map((line) => `- ${line.replace(/^[*-]\s+/, "")}`);
 
-          if (notes) {
-            fs.writeFileSync("release-notes.md", `${notes}\n`);
+          if (changes.length > 0) {
+            const repository = process.env.GITHUB_REPOSITORY ?? "CorieW/better-auth-ui";
+            const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
+            const tag = process.env.TAG;
+            const releaseNotes = [
+              "**Changelog:**",
+              ...changes,
+              "",
+              `**Full Changelog**: ${serverUrl}/${repository}/commits/${tag}`,
+              ""
+            ].join("\n");
+
+            fs.writeFileSync("release-notes.md", releaseNotes);
           }
           NODE
 
