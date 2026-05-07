@@ -1,5 +1,8 @@
 # Better Auth UI
 
+> [!WARNING]
+> This is an unofficial repository for the `better-auth-ui` package. This repo exists to fix an issue in the legacy branch of the package that I still use.
+
 <picture>
     <source srcset="https://raw.githubusercontent.com/daveyplate/better-auth-ui/legacy/docs/public/better-auth-ui-promo-dark.png" media="(prefers-color-scheme: dark)">
     <source srcset="https://raw.githubusercontent.com/daveyplate/better-auth-ui/legacy/docs/public/better-auth-ui-promo-light.png" media="(prefers-color-scheme: light)">
