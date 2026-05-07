@@ -152,6 +152,7 @@ export function OrganizationCell({
             <LeaveOrganizationDialog
                 open={isLeaveDialogOpen}
                 onOpenChange={setIsLeaveDialogOpen}
+                classNames={classNames}
                 organization={organization}
                 localization={localization}
             />
